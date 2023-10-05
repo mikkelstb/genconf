@@ -16,13 +16,22 @@ Example config file:
     </log>
 </maindb>
 
-Usage:
-
+## Usage:
 The function ReadFile reads a config file and returns a Config object:
-conf := genconf.ParseFile("config.conf").Get("maindb")
 
-Accessing the values:
-host := conf.Value("host")
-user := conf.Value("user")
-pswd := conf.Value("password")
+ conf := genconf.ParseFile("config.conf")
+
+## Accesing blocks
+The method Get returns a Config object for the block with the given name:
+
+ maindb := conf.Get("maindb")
+
+Currently the function panics if the file cannot be read or parsed.
+
+## Accessing values
+Use the Value() function to get the value of a key:
+
+ host := conf.Value("host")
+ user := conf.Value("user")
+ pswd := conf.Value("password")
 
