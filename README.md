@@ -4,6 +4,7 @@ The config files are used in a variety of projects. They contain blocks of key-v
 
 Example config file:
 
+```
 <maindb>
     host localhost
     port 5432
@@ -15,23 +16,29 @@ Example config file:
         file /var/log/maindb.log
     </log>
 </maindb>
+```
 
-## Usage:
+##### Usage:
 The function ReadFile reads a config file and returns a Config object:
 
+```
  conf := genconf.ParseFile("config.conf")
+```
 
-## Accesing blocks
+##### Accesing blocks
 The method Get returns a Config object for the block with the given name:
 
+```
  maindb := conf.Get("maindb")
+```
 
 Currently the function panics if the file cannot be read or parsed.
 
-## Accessing values
+##### Accessing values
 Use the Value() function to get the value of a key:
 
+```
  host := conf.Value("host")
  user := conf.Value("user")
  pswd := conf.Value("password")
-
+```
