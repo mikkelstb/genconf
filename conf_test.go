@@ -6,47 +6,62 @@ import (
 	"github.com/mikkelstb/genconf"
 )
 
-func TestNewConf(t *testing.T) {
+var exampleconf = "./resources/example.conf"
+var databaseconf = "./resources/database.conf"
 
-	conf := genconf.ParseFile("example.conf")
+func TestExampleConf(t *testing.T) {
 
-	// Get value of key1 in block1
-	key1 := conf.Get("block1").Value("key1")
-	if key1 != "value1" {
-		t.Errorf("Expected value1, got %s", key1)
+	exconf := genconf.ParseFile(exampleconf)
+	block1 := exconf.Get("block1")
+
+	if block1 == nil {
+		t.Errorf("Block1 is nil")
 	}
 
-	// Get all values of key6 in block1
-	key1s := conf.Get("block1").Values("key6")
-	if len(key1s) != 2 {
-		t.Errorf("Expected 2 values, got %d", len(key1s))
+	if block1.Value("key1") != "value1" {
+		t.Errorf("Block1 key1 is not value1")
 	}
 
-	// Get a map of all values in key4
-	key4 := conf.Get("block1").Get("key4").Map()["key411"]
-
-	if key4 != "value1" {
-		t.Errorf("Expected value1, got %s", key4)
+	if block1.Value("key2") != "quoted value" {
+		t.Errorf("Block1 key2 is not quoted value")
 	}
 
-	db_conf := genconf.ParseFile("database.conf").Get("db")
-	host := db_conf.Value("host")
-	user := db_conf.Value("user")
-	pass := db_conf.Value("password")
-	db := db_conf.Value("database")
-
-	// check the individual values
-	if host != "corp.example.com" {
-		t.Errorf("Expected corp.example.com, got %s", host)
-	}
-	if user != "" {
-		t.Errorf("Expected empty_string, got %s", user)
-	}
-	if pass != "root" {
-		t.Errorf("Expected root, got %s", pass)
-	}
-	if db != "main" {
-		t.Errorf("Expected main, got %s", db)
+	if block1.Value("key3") != "single quoted value" {
+		t.Errorf("Block1 key3 is not single quoted value")
 	}
 
+	block_key4 := block1.Get("key4")
+
+	if block_key4 == nil {
+		t.Errorf("Block1 key4 is nil")
+	}
+}
+
+func TestDatabaseConf(t *testing.T) {
+	dbconf := genconf.ParseFile(databaseconf)
+
+	maindbconf := dbconf.Get("maindb")
+
+	if maindbconf == nil {
+		t.Errorf("maindb is nil")
+	}
+
+	if maindbconf.Value("host") != "corp.example.com" {
+		t.Errorf("maindb host is not corp.example.com")
+	}
+
+	logger := dbconf.Get("slave").Get("logger").Value("file")
+
+	if logger != "/var/log/db.log" {
+		t.Errorf("slave1 logger is not /var/log/db.log")
+	}
+
+	keys := dbconf.Get("es").Keys()
+	if len(keys) != 2 {
+		t.Errorf("es has not 2 Attributes")
+	}
+
+	if dbconf.Get("es").Value("host") != "es1.example.com" {
+		t.Errorf("es host is not es1.example.com")
+	}
 }

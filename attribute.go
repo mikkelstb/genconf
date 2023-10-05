@@ -13,6 +13,10 @@ type Attribute struct {
 	quote string
 }
 
+func (a Attribute) Name() string {
+	return a.name
+}
+
 func (a Attribute) String() string {
 	if a.quote == "" {
 		return a.name + " " + a.value + "\n"
@@ -28,10 +32,18 @@ func (b BlankLine) String() string {
 	return "\n"
 }
 
+func (b BlankLine) Name() string {
+	return ""
+}
+
 // Type Comment represents a comment.
 // It is used when writing the configuration back to a file.
 type Comment string
 
 func (c Comment) String() string {
 	return "# " + string(c) + "\n"
+}
+
+func (c Comment) Name() string {
+	return ""
 }

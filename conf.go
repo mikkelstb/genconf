@@ -20,21 +20,6 @@ Comments are allowed on their own line, and blank lines are allowed between bloc
 
 Comments after a key-value or block statements are not supported.
 
-  Example of a conf file:
-
-  <blockname name>
-   key value
-   key2 value2
-   	<subnode name>
-     key value
-	</subnode>
-	<subnode name2>
-	 key value
-	 # comment
-	 # below is a blank line
-
-	</subnode>
-  </blockname>
 */
 
 // The following regular expressions are used to parse the configuration file.
@@ -73,6 +58,7 @@ var (
 
 type ConfNode interface {
 	String() string
+	Name() string
 }
 
 // Conf is the main type of the package.
@@ -82,6 +68,10 @@ type Conf struct {
 	value    string
 	parent   *Conf
 	children []ConfNode
+}
+
+func (c *Conf) Name() string {
+	return c.name
 }
 
 // Get returns a child node with the given name.
@@ -121,7 +111,8 @@ func (c *Conf) Value(key string) string {
 	return ""
 }
 
-// Values returns all values of the attribute with the given name.
+// Values returns all values of the attribute with the given name as a slice of strings.
+// If there are no attributes with the given name, an empty slice is returned.
 func (c *Conf) Values(key string) []string {
 	var values []string
 	for _, child := range c.children {
@@ -252,4 +243,29 @@ func (c *Conf) indent() string {
 		return ""
 	}
 	return c.parent.indent() + "  "
+}
+
+// Children() returns a slice of strings with the names of all child blocks.
+// Attributes are not included.
+// If the block has no children, an empty slice is returned.
+func (c Conf) Children() []string {
+	var children []string
+	for _, child := range c.children {
+		if conf, ok := child.(*Conf); ok {
+			children = append(children, conf.name)
+		}
+	}
+	return children
+}
+
+// Keys() returns a slice of strings with the names of all attributes.
+// Blocks are not included.
+func (c Conf) Keys() []string {
+	var keys []string
+	for _, child := range c.children {
+		if attr, ok := child.(Attribute); ok {
+			keys = append(keys, attr.name)
+		}
+	}
+	return keys
 }
