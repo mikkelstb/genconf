@@ -40,7 +40,7 @@ func TestExampleConf(t *testing.T) {
 func TestDatabaseConf(t *testing.T) {
 	dbconf := genconf.ParseFile(databaseconf)
 
-	maindbconf := dbconf.Get("maindb")
+	maindbconf := dbconf.Get("main_db")
 
 	if maindbconf == nil {
 		t.Errorf("maindb is nil")

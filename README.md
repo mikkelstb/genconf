@@ -18,14 +18,14 @@ Example config file:
 </maindb>
 ```
 
-##### Usage:
+##### Usage
 The function ReadFile reads a config file and returns a Config object:
 
 ```
  conf := genconf.ParseFile("config.conf")
 ```
 
-##### Accesing blocks
+##### Accessing blocks
 The method Get returns a Config object for the block with the given name:
 
 ```

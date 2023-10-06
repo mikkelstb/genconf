@@ -26,16 +26,12 @@ Comments after a key-value or block statements are not supported.
 
 var (
 	// block_start_pattern matches the start of a block.
-	// Example: <blockname>
-	block_start_pattern = regexp.MustCompile(`^\s*?<([a-zA-Z0-9]+)>$`)
-
-	// block_end_pattern matches the end of a block.
-	// Example: </blockname>
-	block_end_pattern = regexp.MustCompile(`^\s*?</([a-zA-Z0-9]+)>$`)
+	// Example: <bloc-kname>
+	block_pattern = regexp.MustCompile(`^\s*?<(\S+?)>$`)
 
 	// attribute_pattern matches an attribute.
 	// Example: key value
-	attribute_pattern = regexp.MustCompile(`^\s*?(\S+)\s*?(\S*)$`)
+	attribute_pattern = regexp.MustCompile(`^\s*?(\S+?)\s*?(\S*)$`)
 
 	// quoted_pattern matches a quoted attribute.
 	// Example: key "value"
@@ -210,15 +206,18 @@ func parse(scanner *bufio.Scanner, parent *Conf) (*Conf, error) {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		if matches := block_start_pattern.FindStringSubmatch(line); matches != nil {
+		if matches := block_pattern.FindStringSubmatch(line); matches != nil {
+
+			//Check if first character is a /, if so, it is a closing block
+			if strings.HasPrefix(matches[1], "/") {
+				return c, nil
+			}
 			child, err := parse(scanner, c)
 			if err != nil {
 				return nil, err
 			}
 			child.name = matches[1]
 			c.children = append(c.children, child)
-		} else if matches := block_end_pattern.FindStringSubmatch(line); matches != nil {
-			return c, nil
 		} else if matches := attribute_pattern.FindStringSubmatch(line); matches != nil {
 			c.addAttribute(matches[1], matches[2], "")
 		} else if matches := quoted_pattern.FindStringSubmatch(line); matches != nil {
