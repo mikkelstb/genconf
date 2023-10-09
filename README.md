@@ -69,9 +69,9 @@ This will be treated equivalently to:
     user postgres
  </one>
  <two>
-        host localhost
-        port 5432
-        user postgres
+    host localhost
+    port 5432
+    user postgres
  </two>
 </db>
 ```
