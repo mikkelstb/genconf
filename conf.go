@@ -26,8 +26,12 @@ Comments after a key-value or block statements are not supported.
 
 var (
 	// block_start_pattern matches the start of a block.
-	// Example: <bloc-kname>
+	// Example: <block-name>
 	block_pattern = regexp.MustCompile(`^\s*?<(\S+?)>$`)
+
+	// blockpattern with a name and value
+	// Example: <blockname value>
+	block_pattern_with_value = regexp.MustCompile(`^\s*?<(\S+?)\s*?(\S+?)>$`)
 
 	// attribute_pattern matches an attribute.
 	// Example: key value
@@ -95,7 +99,7 @@ func (c *Conf) GetAll(name string) []*Conf {
 	return confs
 }
 
-// Value returns the value of the attribute with the given name.
+// Value returns the value of the first attribute with the given name.
 func (c *Conf) Value(key string) string {
 	for _, child := range c.children {
 		if attr, ok := child.(Attribute); ok {
@@ -202,12 +206,11 @@ func ParseFile(filename string) *Conf {
 // It returns a Conf object.
 // It reads from the scanner one line at a time.
 func parse(scanner *bufio.Scanner, parent *Conf) (*Conf, error) {
-	c := &Conf{parent: parent}
+	c := &Conf{parent: parent, children: []ConfNode{}}
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if matches := block_pattern.FindStringSubmatch(line); matches != nil {
-
 			//Check if first character is a /, if so, it is a closing block
 			if strings.HasPrefix(matches[1], "/") {
 				return c, nil
@@ -218,6 +221,29 @@ func parse(scanner *bufio.Scanner, parent *Conf) (*Conf, error) {
 			}
 			child.name = matches[1]
 			c.children = append(c.children, child)
+
+		} else if matches := block_pattern_with_value.FindStringSubmatch(line); matches != nil {
+			// both value and name acts as a block name
+			// First check if a block with the same name already exists
+			// If so, add the result to the existing block
+			// If not, create a new block
+			middle := c.Get(matches[1])
+
+			// If the block does not exist, create it
+			if middle == nil {
+				middle = &Conf{parent: c, children: []ConfNode{}}
+				middle.name = matches[1]
+				c.children = append(c.children, middle)
+			}
+
+			// treat the value as a block name, and parse it, adding the result to the middle block
+			child, err := parse(scanner, middle)
+			if err != nil {
+				return nil, err
+			}
+			child.name = matches[2]
+			middle.children = append(middle.children, child)
+
 		} else if matches := attribute_pattern.FindStringSubmatch(line); matches != nil {
 			c.addAttribute(matches[1], matches[2], "")
 		} else if matches := quoted_pattern.FindStringSubmatch(line); matches != nil {
@@ -248,7 +274,7 @@ func (c *Conf) indent() string {
 // Attributes are not included.
 // If the block has no children, an empty slice is returned.
 func (c Conf) Children() []string {
-	var children []string
+	children := []string{}
 	for _, child := range c.children {
 		if conf, ok := child.(*Conf); ok {
 			children = append(children, conf.name)

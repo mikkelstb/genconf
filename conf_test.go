@@ -1,6 +1,7 @@
 package genconf_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/mikkelstb/genconf"
@@ -35,6 +36,27 @@ func TestExampleConf(t *testing.T) {
 	if block_key4 == nil {
 		t.Errorf("Block1 key4 is nil")
 	}
+
+	databases := block1.Get("database")
+	if databases == nil {
+		t.Errorf("databases is nil")
+	}
+
+	if len(databases.Children()) != 2 {
+		t.Errorf("databases has not 2 children")
+	}
+
+	maindb := databases.Get("main")
+	if maindb == nil {
+		t.Errorf("maindb is nil")
+	}
+
+	if maindb.Value("user") != "root" {
+		t.Errorf("maindb user is not root")
+	}
+
+	fmt.Println(exconf)
+
 }
 
 func TestDatabaseConf(t *testing.T) {

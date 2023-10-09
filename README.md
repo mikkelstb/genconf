@@ -38,7 +38,40 @@ Currently the function panics if the file cannot be read or parsed.
 Use the Value() function to get the value of a key:
 
 ```
- host := conf.Value("host")
- user := conf.Value("user")
- pswd := conf.Value("password")
+ host := maindb.Value("host")
+ user := maindb.Value("user")
+ pswd := maindb.Value("password")
+```
+
+##### Blocks with values
+Blocks can have a value as a second argument:
+
+```
+<db one>
+    host localhost
+    port 5432
+    user postgres
+</db>
+<db two>
+    host localhost
+    port 5432
+    user postgres
+</db>
+```
+
+This will be treated equivalently to:
+
+```
+<db>
+ <one>
+    host localhost
+    port 5432
+    user postgres
+ </one>
+    <two>
+        host localhost
+        port 5432
+        user postgres
+    </two>
+</db>
 ```
