@@ -68,10 +68,10 @@ This will be treated equivalently to:
     port 5432
     user postgres
  </one>
-    <two>
+ <two>
         host localhost
         port 5432
         user postgres
-    </two>
+ </two>
 </db>
 ```

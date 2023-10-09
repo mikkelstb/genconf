@@ -1,7 +1,6 @@
 package genconf_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/mikkelstb/genconf"
@@ -54,9 +53,6 @@ func TestExampleConf(t *testing.T) {
 	if maindb.Value("user") != "root" {
 		t.Errorf("maindb user is not root")
 	}
-
-	fmt.Println(exconf)
-
 }
 
 func TestDatabaseConf(t *testing.T) {
