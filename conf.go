@@ -33,6 +33,9 @@ var (
 	// Example: <blockname value>
 	block_pattern_with_value = regexp.MustCompile(`^\s*?<(\S+?)\s*?(\S+?)>$`)
 
+	// attribute_comment_pattern matches an attribute with a comment.
+	// attribute_comment_pattern = `^\s*?(\S+?)\s*?(["'])?(\S*?)(["'])?((\s*?)(#)(.*))?$`
+
 	// attribute_pattern matches an attribute.
 	// Example: key value
 	attribute_pattern = regexp.MustCompile(`^\s*?(\S+?)\s*?(\S*)$`)
@@ -244,12 +247,12 @@ func parse(scanner *bufio.Scanner, parent *Conf) (*Conf, error) {
 			child.name = matches[2]
 			middle.children = append(middle.children, child)
 
-		} else if matches := attribute_pattern.FindStringSubmatch(line); matches != nil {
-			c.addAttribute(matches[1], matches[2], "")
 		} else if matches := quoted_pattern.FindStringSubmatch(line); matches != nil {
 			c.addAttribute(matches[1], matches[2], "\"")
 		} else if matches := single_quoted_pattern.FindStringSubmatch(line); matches != nil {
 			c.addAttribute(matches[1], matches[2], "'")
+		} else if matches := attribute_pattern.FindStringSubmatch(line); matches != nil {
+			c.addAttribute(matches[1], matches[2], "")
 		} else if matches := comment_pattern.FindStringSubmatch(line); matches != nil {
 			c.addComment(matches[1])
 		} else if matches := blank_line_pattern.FindStringSubmatch(line); matches != nil {

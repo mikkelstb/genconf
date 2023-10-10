@@ -41,6 +41,10 @@ func TestExampleConf(t *testing.T) {
 		t.Errorf("databases is nil")
 	}
 
+	if len(exconf.Children()) != 2 {
+		t.Errorf("exampleconf has not 2 children")
+	}
+
 	if len(databases.Children()) != 2 {
 		t.Errorf("databases has not 2 children")
 	}
