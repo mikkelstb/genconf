@@ -78,6 +78,7 @@ func (c *Conf) Name() string {
 }
 
 // Get returns a child node with the given name.
+// If no child node with the given name exists, a new empty Conf object is returned.
 func (c *Conf) Get(name string) *Conf {
 	for _, child := range c.children {
 		if conf, ok := child.(*Conf); ok {
@@ -86,7 +87,7 @@ func (c *Conf) Get(name string) *Conf {
 			}
 		}
 	}
-	return nil
+	panic(fmt.Sprintf("no such child for %s: %s", c.name, name))
 }
 
 // GetAll returns all child nodes of type Conf with the given name.
@@ -158,8 +159,6 @@ func (c *Conf) String() string {
 			sb.WriteString(c.indent() + ch.String())
 		case BlankLine:
 			sb.WriteString(ch.String())
-		default:
-			panic(fmt.Sprintf("Unknown type: %T", child))
 		}
 	}
 	if c.name != "" {
@@ -191,18 +190,32 @@ func (c *Conf) addBlankLine() {
 
 // ParseFile parses a configuration file and returns a Conf object.
 // If the file cannot be opened or parsed, it panics.
-func ParseFile(filename string) *Conf {
+func ParseFile(filename string) (*Conf, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	conf, err := parse(scanner, nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return conf
+	return conf, nil
+}
+
+// check("name") ConfNode
+// function checks if the block has a child with the given name
+// if so, it returns the child, else returns nil
+func (c Conf) check(name string) *Conf {
+	for _, child := range c.children {
+		if conf, ok := child.(*Conf); ok {
+			if conf.name == name {
+				return conf
+			}
+		}
+	}
+	return nil
 }
 
 // parse is a recursive function that parses a configuration file.
@@ -230,7 +243,7 @@ func parse(scanner *bufio.Scanner, parent *Conf) (*Conf, error) {
 			// First check if a block with the same name already exists
 			// If so, add the result to the existing block
 			// If not, create a new block
-			middle := c.Get(matches[1])
+			middle := c.check(matches[1])
 
 			// If the block does not exist, create it
 			if middle == nil {

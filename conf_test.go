@@ -11,7 +11,11 @@ var databaseconf = "./resources/database.conf"
 
 func TestExampleConf(t *testing.T) {
 
-	exconf := genconf.ParseFile(exampleconf)
+	exconf, err := genconf.ParseFile(exampleconf)
+	if err != nil {
+		t.Errorf("Error parsing example.conf: %s", err)
+	}
+
 	block1 := exconf.Get("block1")
 
 	if block1 == nil {
@@ -42,11 +46,11 @@ func TestExampleConf(t *testing.T) {
 	}
 
 	if len(exconf.Children()) != 2 {
-		t.Errorf("exampleconf has not 2 children")
+		t.Errorf("exampleconf does not have 2 children")
 	}
 
 	if len(databases.Children()) != 2 {
-		t.Errorf("databases has not 2 children")
+		t.Errorf("databases does not have 2 children")
 	}
 
 	maindb := databases.Get("main")
@@ -57,10 +61,18 @@ func TestExampleConf(t *testing.T) {
 	if maindb.Value("user") != "root" {
 		t.Errorf("maindb user is not root")
 	}
+
+	tasks := block1.Get("tasks").Values("task")
+	if len(tasks) != 2 {
+		t.Errorf("tasks does not have 2 values")
+	}
 }
 
 func TestDatabaseConf(t *testing.T) {
-	dbconf := genconf.ParseFile(databaseconf)
+	dbconf, err := genconf.ParseFile(databaseconf)
+	if err != nil {
+		t.Errorf("Error parsing database.conf: %s", err)
+	}
 
 	maindbconf := dbconf.Get("main_db")
 
@@ -85,5 +97,18 @@ func TestDatabaseConf(t *testing.T) {
 
 	if dbconf.Get("es").Value("host") != "es1.example.com" {
 		t.Errorf("es host is not es1.example.com")
+	}
+
+	map_of_keys := dbconf.Get("main_db").Map()
+	if len(map_of_keys) != 5 {
+		t.Errorf("maindb has not 5 Attributes")
+	}
+
+}
+
+func TestUnknownFile(t *testing.T) {
+	_, err := genconf.ParseFile("unknown.conf")
+	if err == nil {
+		t.Errorf("Error parsing unknown.conf: %s", err)
 	}
 }
