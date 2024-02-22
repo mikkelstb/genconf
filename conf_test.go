@@ -1,6 +1,7 @@
 package genconf_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/mikkelstb/genconf"
@@ -104,6 +105,35 @@ func TestDatabaseConf(t *testing.T) {
 		t.Errorf("maindb has not 5 Attributes")
 	}
 
+	query_1 := "main_db/host"
+
+	if dbconf.GetValueFromPath(query_1) != "corp.example.com" {
+		t.Errorf("main_db/host is not corp.example.com")
+	}
+
+	query_2 := "slave/logger/file"
+
+	if dbconf.GetValueFromPath(query_2) != "/var/log/db.log" {
+		t.Errorf("slave/logger/file is not /var/log/db.log")
+	}
+
+	query_3 := "es/user"
+
+	if dbconf.GetValueFromPath(query_3) != "" {
+		t.Errorf("es/user is not empty")
+	}
+
+	// Test the String() method
+	// Read the file and compare it to the string representation of the parsed file
+
+	file, err := os.ReadFile(databaseconf)
+	if err != nil {
+		t.Errorf("Error reading database.conf: %s", err)
+	}
+
+	if string(file) != dbconf.String() {
+		t.Errorf("File and string representation are not the same")
+	}
 }
 
 func TestUnknownFile(t *testing.T) {

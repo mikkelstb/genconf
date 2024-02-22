@@ -41,7 +41,7 @@ func (b BlankLine) Name() string {
 type Comment string
 
 func (c Comment) String() string {
-	return "# " + string(c) + "\n"
+	return "#" + string(c) + "\n"
 }
 
 func (c Comment) Name() string {

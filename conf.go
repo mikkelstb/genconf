@@ -56,6 +56,8 @@ var (
 	blank_line_pattern = regexp.MustCompile(`^\s*$`)
 )
 
+var Indent = 4
+
 // ConfNode is an interface that is implemented by all types that can be
 // children of a Conf object.
 
@@ -78,7 +80,7 @@ func (c *Conf) Name() string {
 }
 
 // Get returns a child node with the given name.
-// If no child node with the given name exists, a new empty Conf object is returned.
+// If no child node with the given name exists, it returns nil
 func (c *Conf) Get(name string) *Conf {
 	for _, child := range c.children {
 		if conf, ok := child.(*Conf); ok {
@@ -87,7 +89,7 @@ func (c *Conf) Get(name string) *Conf {
 			}
 		}
 	}
-	panic(fmt.Sprintf("no such child for %s: %s", c.name, name))
+	return nil
 }
 
 // GetAll returns all child nodes of type Conf with the given name.
@@ -189,7 +191,7 @@ func (c *Conf) addBlankLine() {
 }
 
 // ParseFile parses a configuration file and returns a Conf object.
-// If the file cannot be opened or parsed, it panics.
+// If the file cannot be opened or parsed, it returns an error.
 func ParseFile(filename string) (*Conf, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -283,7 +285,7 @@ func (c *Conf) indent() string {
 	if c.parent == nil {
 		return ""
 	}
-	return c.parent.indent() + "  "
+	return c.parent.indent() + strings.Repeat(" ", Indent)
 }
 
 // Children() returns a slice of strings with the names of all child blocks.
@@ -309,4 +311,31 @@ func (c Conf) Keys() []string {
 		}
 	}
 	return keys
+}
+
+// GetValueFromPath(path string)
+// function returns the value of the attribute with the given xpath like path
+// if the path does not exist, it returns an empty string
+
+func (c *Conf) GetValueFromPath(path string) string {
+	// Split the path into parts
+	parts := strings.Split(path, "/")
+
+	// If the path is empty, return an empty string
+	if len(parts) == 0 {
+		return ""
+	}
+
+	// If the path has only one part, it is the name of the attribute
+	if len(parts) == 1 {
+		return c.Value(parts[0])
+	}
+
+	// If the path has more than one part, the first part is the name of a block
+	// and the rest of the parts are the path to the attribute
+	block := c.Get(parts[0])
+	if block == nil {
+		return ""
+	}
+	return block.GetValueFromPath(strings.Join(parts[1:], "/"))
 }
